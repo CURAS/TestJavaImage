@@ -1,9 +1,12 @@
 package testjavaimage;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("unused")
 public class Watermark {
 
     public static BufferedImage makeMarkedImage(BufferedImage image, int[] bits, double strength) {
@@ -14,6 +17,7 @@ public class Watermark {
         double[][] greens = ImageTool.toDoubleArray(ImageTool.getChannel(pixels, ImageTool.GREEN));
 
         double[][][][] greenBlocks = DCTMachine.blockPartition(greens, 8);
+//        greenBlocks = machine.DCT_p(greenBlocks);
         for (int i = 0; i < greenBlocks.length; i++) {
             for (int j = 0; j < greenBlocks[0].length; j++) {
                 greenBlocks[i][j] = machine.DCT(greenBlocks[i][j]);
@@ -22,6 +26,7 @@ public class Watermark {
 
         Watermark.addMark(greenBlocks, bits, strength);
 
+//        greenBlocks = machine.iDCT_p(greenBlocks);
         for (int i = 0; i < greenBlocks.length; i++) {
             for (int j = 0; j < greenBlocks[0].length; j++) {
                 greenBlocks[i][j] = machine.iDCT(greenBlocks[i][j]);
@@ -42,6 +47,7 @@ public class Watermark {
         double[][] greens = ImageTool.toDoubleArray(ImageTool.getChannel(pixels, ImageTool.GREEN));
 
         double[][][][] greenBlocks = DCTMachine.blockPartition(greens, 8);
+//        greenBlocks = machine.DCT_p(greenBlocks);
         for (int i = 0; i < greenBlocks.length; i++) {
             for (int j = 0; j < greenBlocks[0].length; j++) {
                 greenBlocks[i][j] = machine.DCT(greenBlocks[i][j]);
@@ -103,14 +109,17 @@ public class Watermark {
         return result;
     }
 
-    public static String arrayToInfo(int[] array) {
+    public static List<String> arrayToInfo(int[] array) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < array.length / 4; i++) {
             int value = array[i * 4] + (array[i * 4 + 1] << 1) + (array[i * 4 + 2] << 2) + (array[i * 4 + 3] << 3);
             sb.append(intToHex(value));
         }
 
+        System.out.println(sb.toString());
+
         String[] infos = sb.toString().split("f");
+        ArrayList<String> checkedInfos = new ArrayList<>();
         for (String info : infos) {
             if (info.length() > 0) {
                 int checkSum = 0;
@@ -119,12 +128,12 @@ public class Watermark {
                 }
 
                 if (checkSum % 0xf == hexToInt(info.charAt(0))) {
-                    return info.substring(1);
+                    checkedInfos.add(info.substring(1));
                 }
             }
         }
 
-        return "";
+        return checkedInfos;
     }
 
     private static int hexToInt(char c) {
@@ -145,15 +154,15 @@ public class Watermark {
 
     private static void addBit(double[][] block, int bit, double strength) {
         final int size = block.length;
-        block[size / 2 + size / 4][size / 2 + size / 4] = crossAverage(block, size / 2 + size / 4) + (bit != 0 ? 1 : -1) * strength;
+        block[size / 2][size / 2] = crossAverage(block, size / 2, size / 2) + (bit != 0 ? 1 : -1) * strength;
     }
 
     private static int extractBit(double[][] block) {
         final int size = block.length;
-        return block[size / 2 + size / 4][size / 2 + size / 4] - crossAverage(block, size / 2 + size / 4) > 0 ? 1 : 0;
+        return block[size / 2][size / 2] - crossAverage(block, size / 2, size / 2) > 0 ? 1 : 0;
     }
 
-    private static double crossAverage(double[][] block, int pos) {
-        return (block[pos + 1][pos] + block[pos - 1][pos] + block[pos][pos + 1] + block[pos][pos - 1]) / 4;
+    private static double crossAverage(double[][] block, int posX, int posY) {
+        return (block[posY + 1][posX] + block[posY - 1][posX] + block[posY][posX + 1] + block[posY][posX - 1]) / 4;
     }
 }

@@ -50,10 +50,9 @@ public class ImageTool {
         }
     }
 
-    public static final int RED = 0;
+    public static final int RED = 2;
     public static final int GREEN = 1;
-    public static final int BLUE = 2;
-    public static final int ALPHA = 3;
+    public static final int BLUE = 0;
 
     public static int[][] getChannel(int[][] pixels, int channel) {
         int[][] data = new int[pixels.length][pixels[0].length];
@@ -79,7 +78,7 @@ public class ImageTool {
         int[][] intArray = new int[array.length][array[0].length];
         for (int i = 0; i < array.length; i++) {
             for (int j = 0; j < array[0].length; j++) {
-                intArray[i][j] = (int) array[i][j];
+                intArray[i][j] = (int) Math.round(array[i][j]);
             }
         }
         return intArray;

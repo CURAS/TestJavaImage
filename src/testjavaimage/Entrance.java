@@ -4,8 +4,8 @@ import java.awt.image.BufferedImage;
 
 public class Entrance {
 
-    final static private String inputPath = "D:\\colors.jpg";
-    final static private String outputPath = "D:\\colors2.bmp";
+    final static private String inputPath = "D:\\lena.jpg";
+    final static private String outputPath = "D:\\lena2.jpg";
 
     public static void main(String[] args) throws UnsupportedColorTypeException {
         BufferedImage image, markedImage;
@@ -13,12 +13,15 @@ public class Entrance {
 
         image = ImageTool.readImg(inputPath);
         bits = Watermark.infoToArray("2014220201029");
-        markedImage = Watermark.makeMarkedImage(image, bits, 2);
-        ImageTool.writeImg(markedImage, outputPath, "bmp");
+        markedImage = Watermark.makeMarkedImage(image, bits, 100);
+        ImageTool.writeImg(markedImage, outputPath, "jpg");
 
         markedImage = ImageTool.readImg(outputPath);
         bits2 = Watermark.extractMarkFromImage(markedImage);
 
-        System.out.println(Watermark.arrayToInfo(bits2));
+        for (String s : Watermark.arrayToInfo(bits2)) {
+            System.out.println(s);
+        }
     }
+
 }
